@@ -1,13 +1,12 @@
-import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_auth/main.dart';
 import 'package:phone_auth/pages/home.dart';
+import 'dart:developer' as developer;
 
 class Otp extends StatefulWidget {
   String verificationId;
-  Otp({super.key, required this.verificationId});
+  Otp({Key? key, required this.verificationId});
 
   @override
   State<Otp> createState() => _OtpState();
@@ -15,11 +14,12 @@ class Otp extends StatefulWidget {
 
 class _OtpState extends State<Otp> {
   TextEditingController otpController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Otp verification"),
+        title: Text("OTP Verification"),
         centerTitle: true,
       ),
       body: Column(
@@ -41,21 +41,29 @@ class _OtpState extends State<Otp> {
           ElevatedButton(
               onPressed: () async {
                 try {
-                  PhoneAuthCredential credential =
-                      await PhoneAuthProvider.credential(
-                          verificationId: widget.verificationId,
-                          smsCode: otpController.text.toString());
-                  FirebaseAuth.instance
+                  PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                      verificationId: widget.verificationId,
+                      smsCode: otpController.text.toString());
+                  await FirebaseAuth.instance
                       .signInWithCredential(credential)
                       .then((value) {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => Home()));
                   });
                 } catch (ex) {
-                  log(ex.toString() as num);
+                  // Log the error
+                  developer.log(ex.toString());
+
+                  // Show a snackbar to the user indicating incorrect OTP
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Incorrect OTP. Please try again."),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 }
               },
-              child: Text("Verify otp"))
+              child: Text("Verify OTP")),
         ],
       ),
     );
